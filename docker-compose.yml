@@ -1,0 +1,72 @@
+services:
+  # Reverse proxy with automatic HTTPS
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - internal
+    depends_on:
+      - ieomd
+      - umami
+
+  # Shared Postgres database
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # IEOMD - Time-locked secret delivery
+  ieomd:
+    image: ghcr.io/richmiles/ieomd:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${IEOMD_DB_USER:-ieomd}:${IEOMD_DB_PASSWORD:?Set IEOMD_DB_PASSWORD in .env}@postgres:5432/${IEOMD_DB_NAME:-ieomd_db}
+      CORS_ORIGINS: ${IEOMD_CORS_ORIGINS:-https://ieomd.com}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Umami - Privacy-focused analytics
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER:-umami}:${UMAMI_DB_PASSWORD:?Set UMAMI_DB_PASSWORD in .env}@postgres:5432/${UMAMI_DB_NAME:-umami_db}
+      APP_SECRET: ${UMAMI_APP_SECRET:?Set UMAMI_APP_SECRET in .env}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

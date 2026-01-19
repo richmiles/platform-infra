@@ -1,0 +1,18 @@
+# IEOMD - Time-locked secret delivery
+ieomd.com {
+	reverse_proxy ieomd:8000
+}
+
+www.ieomd.com {
+	redir https://ieomd.com{uri} permanent
+}
+
+# Umami - Analytics
+analytics.sparkswarm.com {
+	reverse_proxy umami:3000
+}
+
+# Add new services below:
+# example.sparkswarm.com {
+#     reverse_proxy service:port
+# }
