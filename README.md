@@ -101,13 +101,28 @@ sudo ufw enable
 
 ## Adding a New Service
 
-1. Add service to `docker-compose.yml`
-2. Add domain routing to `Caddyfile`
-3. Add any new env vars to `.env.example`
-4. Deploy:
-   ```bash
-   docker compose up -d
-   ```
+See `docs/adding-a-service.md` for a checklist, copy/paste templates (Compose + Caddy + env + DB), and deploy/rollback guidance.
+
+### Service onboarding (tight version)
+
+- Add container(s) to `docker-compose.yml` on the `internal` network (avoid publishing ports on the host).
+- Add hostname routing to `Caddyfile` (edge Caddy only; point it at the internal service name + port).
+- Add a dedicated Postgres DB + user (least privilege) and record required env vars in `.env.example`.
+- Decide whether you need Spaces; if yes, use a per-service prefix (e.g. `myapp`) and keep credentials global (`SPACES_*`).
+- Make migrations a one-off deploy step (run once), then restart services; keep schema changes backwards-compatible for rollbacks.
+- Prefer pinned image tags (`sha-…`) for production rollouts so rollback is reverting a tag and restarting.
+
+### Validate config
+
+Docker Compose requires some env vars (passwords/secrets). A quick local validation is:
+
+```bash
+POSTGRES_PASSWORD=x \
+IEOMD_DB_PASSWORD=x \
+UMAMI_DB_PASSWORD=x \
+UMAMI_APP_SECRET=x \
+docker compose config >/dev/null
+```
 
 ## Database Access
 
@@ -166,6 +181,7 @@ platform-infra/
 ├── Caddyfile           # Reverse proxy config
 ├── .env.example        # Environment template
 ├── .env                # Local environment (git-ignored)
+├── docs/               # How-tos and templates
 ├── setup.sh            # Server bootstrap script
 └── README.md           # This file
 ```

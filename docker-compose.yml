@@ -6,7 +6,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"  # HTTP/3
+      - "443:443/udp" # HTTP/3
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -41,7 +41,7 @@ services:
     image: ghcr.io/richmiles/in-the-event-of-my-death-web:${IEOMD_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      SITE_ADDRESS: ":80"  # Internal HTTP only (platform Caddy handles TLS)
+      SITE_ADDRESS: ":80" # Internal HTTP only (platform Caddy handles TLS)
     networks:
       - internal
     depends_on:
@@ -55,10 +55,11 @@ services:
       DATABASE_URL: postgresql://${IEOMD_DB_USER:-ieomd}:${IEOMD_DB_PASSWORD:?Set IEOMD_DB_PASSWORD in .env}@postgres:5432/${IEOMD_DB_NAME:-ieomd_db}
       CORS_ORIGINS: ${IEOMD_CORS_ORIGINS:-["https://ieomd.com"]}
       # Object Storage (shared bucket with project prefix)
-      OBJECT_STORAGE_ENABLED: ${OBJECT_STORAGE_ENABLED:-false}
+      # Prefer IEOMD_OBJECT_STORAGE_ENABLED; OBJECT_STORAGE_ENABLED is supported for backward compatibility.
+      OBJECT_STORAGE_ENABLED: ${IEOMD_OBJECT_STORAGE_ENABLED:-${OBJECT_STORAGE_ENABLED:-false}}
       OBJECT_STORAGE_ENDPOINT: https://nyc3.digitaloceanspaces.com
       OBJECT_STORAGE_BUCKET: ${SPACES_BUCKET:-platform-storage}
-      OBJECT_STORAGE_PREFIX: ieomd
+      OBJECT_STORAGE_PREFIX: ${IEOMD_OBJECT_STORAGE_PREFIX:-ieomd}
       OBJECT_STORAGE_ACCESS_KEY: ${SPACES_ACCESS_KEY:-}
       OBJECT_STORAGE_SECRET_KEY: ${SPACES_SECRET_KEY:-}
       OBJECT_STORAGE_REGION: nyc3
