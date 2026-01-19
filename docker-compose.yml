@@ -36,20 +36,31 @@ services:
       timeout: 5s
       retries: 5
 
-  # IEOMD - Time-locked secret delivery
+  # IEOMD Web - Caddy + static frontend (proxies /api to backend)
   ieomd:
-    image: ghcr.io/richmiles/ieomd:latest
+    image: ghcr.io/richmiles/in-the-event-of-my-death-web:${IEOMD_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ":80"  # Internal HTTP only (platform Caddy handles TLS)
+    networks:
+      - internal
+    depends_on:
+      - backend
+
+  # IEOMD Backend - FastAPI (named "backend" to match IEOMD web Caddyfile)
+  backend:
+    image: ghcr.io/richmiles/in-the-event-of-my-death-backend:${IEOMD_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${IEOMD_DB_USER:-ieomd}:${IEOMD_DB_PASSWORD:?Set IEOMD_DB_PASSWORD in .env}@postgres:5432/${IEOMD_DB_NAME:-ieomd_db}
       CORS_ORIGINS: ${IEOMD_CORS_ORIGINS:-["https://ieomd.com"]}
       # Object Storage (shared bucket with project prefix)
-      OBJECT_STORAGE_ENABLED: "true"
+      OBJECT_STORAGE_ENABLED: ${OBJECT_STORAGE_ENABLED:-false}
       OBJECT_STORAGE_ENDPOINT: https://nyc3.digitaloceanspaces.com
       OBJECT_STORAGE_BUCKET: ${SPACES_BUCKET:-platform-storage}
       OBJECT_STORAGE_PREFIX: ieomd
-      OBJECT_STORAGE_ACCESS_KEY: ${SPACES_ACCESS_KEY:?Set SPACES_ACCESS_KEY in .env}
-      OBJECT_STORAGE_SECRET_KEY: ${SPACES_SECRET_KEY:?Set SPACES_SECRET_KEY in .env}
+      OBJECT_STORAGE_ACCESS_KEY: ${SPACES_ACCESS_KEY:-}
+      OBJECT_STORAGE_SECRET_KEY: ${SPACES_SECRET_KEY:-}
       OBJECT_STORAGE_REGION: nyc3
     networks:
       - internal
