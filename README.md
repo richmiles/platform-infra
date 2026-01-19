@@ -26,8 +26,25 @@ Shared infrastructure for SparkSwarm projects. Manages Docker Compose services, 
 |---------|--------|-------------|
 | Caddy | - | Reverse proxy with automatic HTTPS |
 | Postgres | - | Shared database (internal only) |
-| IEOMD | ieomd.com | Time-locked secret delivery |
+| IEOMD | ieomd.com | Time-locked secret delivery ([repo](https://github.com/richmiles/in-the-event-of-my-death)) |
 | Umami | analytics.sparkswarm.com | Privacy-focused analytics |
+
+## Shared Resources
+
+### Postgres
+Each service gets its own database and user (defined in `init-db.sql`). Services connect via `DATABASE_URL` environment variable.
+
+### DigitalOcean Spaces (Object Storage)
+Shared S3-compatible bucket (`platform-storage`) for file storage. Services use a prefix to isolate their objects:
+
+| Service | Prefix | Example Key |
+|---------|--------|-------------|
+| IEOMD | `ieomd/` | `ieomd/attachments/{uuid}` |
+
+Configure in `.env`:
+- `SPACES_BUCKET` - Bucket name (default: `platform-storage`)
+- `SPACES_ACCESS_KEY` - DigitalOcean Spaces access key
+- `SPACES_SECRET_KEY` - DigitalOcean Spaces secret key
 
 ## Quick Start
 
