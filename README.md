@@ -5,17 +5,17 @@ Shared infrastructure for SparkSwarm projects. Manages Docker Compose services, 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Platform Droplet                         │
-│                                                             │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │
-│  │  Caddy  │───▶│  IEOMD  │    │  Umami  │    │ Postgres│  │
-│  │  :80    │    │  :8000  │    │  :3000  │    │  :5432  │  │
-│  │  :443   │───▶│         │    │         │    │         │  │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────┘  │
-│       │                             │              │        │
-│       │         internal network    └──────────────┘        │
-└───────┼─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         Platform Droplet                              │
+│                                                                       │
+│  ┌─────────┐    ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  │
+│  │  Caddy  │───▶│  IEOMD  │  │ Noodle  │  │  Umami  │  │ Postgres│  │
+│  │  :80    │    │  :80    │  │  :8000  │  │  :3000  │  │  :5432  │  │
+│  │  :443   │───▶│         │  │         │  │         │  │         │  │
+│  └─────────┘    └─────────┘  └─────────┘  └─────────┘  └─────────┘  │
+│       │                                        │              │       │
+│       │              internal network          └──────────────┘       │
+└───────┼──────────────────────────────────────────────────────────────┘
         │
    internet
 ```
@@ -27,6 +27,7 @@ Shared infrastructure for SparkSwarm projects. Manages Docker Compose services, 
 | Caddy | - | Reverse proxy with automatic HTTPS |
 | Postgres | - | Shared database (internal only) |
 | IEOMD | ieomd.com | Time-locked secret delivery ([repo](https://github.com/richmiles/in-the-event-of-my-death)) |
+| Noodle | callofthenoodle.com | Bar rating app (SQLite) |
 | Umami | analytics.sparkswarm.com | Privacy-focused analytics |
 
 ## Shared Resources
@@ -177,11 +178,16 @@ cat backup.sql | docker compose exec -T postgres psql -U postgres
 
 ```
 platform-infra/
-├── docker-compose.yml  # Service definitions
-├── Caddyfile           # Reverse proxy config
-├── .env.example        # Environment template
-├── .env                # Local environment (git-ignored)
-├── docs/               # How-tos and templates
-├── setup.sh            # Server bootstrap script
-└── README.md           # This file
+├── docker-compose.yml       # Service definitions
+├── Caddyfile                # Reverse proxy config
+├── .env.example             # Environment template
+├── .env                     # Local environment (git-ignored)
+├── init-db.sql              # Postgres initialization
+├── setup.sh                 # Server bootstrap script
+├── AGENTS.md                # Safe deployment practices
+├── WHEN_SOMETHING_BREAKS.md # Incident response runbook
+├── README.md                # This file
+└── docs/
+    ├── adding-a-service.md  # Service onboarding guide
+    └── SPARKSWARM_BRAND.md  # SparkSwarm infrastructure overview
 ```

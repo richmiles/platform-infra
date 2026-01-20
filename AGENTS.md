@@ -1,0 +1,178 @@
+# AGENTS.md - Platform Infrastructure
+
+This repo manages shared infrastructure for all SparkSwarm projects on a single DigitalOcean droplet.
+
+## Safety First
+
+**This repo controls production infrastructure. Changes can cause downtime.**
+
+### DO NOT without explicit user approval:
+- Restart or stop `postgres` (data loss risk)
+- Modify `init-db.sql` on a running system (won't apply without recreation)
+- Delete Docker volumes
+- Run `docker compose down` (stops all services)
+- Modify `.env` on the droplet directly
+
+### Safe operations (can do when asked):
+- Add new services to `docker-compose.yml`
+- Add new domains to `Caddyfile`
+- Restart individual app services (not postgres)
+- Pull and update images
+- View logs
+
+## Current Services
+
+| Service | Domain | Port | Notes |
+|---------|--------|------|-------|
+| caddy | - | 80, 443 | Reverse proxy, auto HTTPS |
+| postgres | - | 5432 | Shared DB (internal only) |
+| ieomd | ieomd.com | 80 | IEOMD frontend + backend proxy |
+| backend | - | 8000 | IEOMD FastAPI backend |
+| umami | analytics.sparkswarm.com | 3000 | Privacy-focused analytics |
+| noodle | callofthenoodle.com | 8000 | Bar rating app |
+| synapse | chat.sparkswarm.com | 8008 | Matrix server (ops alerting) - planned |
+| btcpayserver | pay.sparkswarm.com | 49392 | Bitcoin payments - in progress |
+
+## Adding a New Service
+
+### 1. Update `docker-compose.yml`
+
+```yaml
+  myapp:
+    image: ghcr.io/richmiles/myapp:${MYAPP_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${MYAPP_DB_USER:-myapp}:${MYAPP_DB_PASSWORD}@postgres:5432/${MYAPP_DB_NAME:-myapp_db}
+      # OR for SQLite:
+      # DATABASE_URL: sqlite:///./data/myapp.db
+    volumes:
+      - myapp_data:/app/data  # if using SQLite or local storage
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy  # only if using Postgres
+```
+
+Add to `volumes:` section if needed:
+```yaml
+volumes:
+  myapp_data:
+```
+
+Add to caddy's `depends_on:`:
+```yaml
+  caddy:
+    depends_on:
+      - myapp
+```
+
+### 2. Update `Caddyfile`
+
+```
+myapp.example.com {
+    reverse_proxy myapp:8000
+}
+
+www.myapp.example.com {
+    redir https://myapp.example.com{uri} permanent
+}
+```
+
+### 3. Update `.env.example`
+
+```bash
+# MyApp
+MYAPP_DB_USER=myapp
+MYAPP_DB_PASSWORD=change-me
+MYAPP_DB_NAME=myapp_db
+MYAPP_IMAGE_TAG=latest
+```
+
+### 4. Update `init-db.sql` (if using Postgres)
+
+```sql
+-- MyApp
+CREATE USER myapp WITH PASSWORD 'change-me';
+CREATE DATABASE myapp_db OWNER myapp;
+GRANT ALL PRIVILEGES ON DATABASE myapp_db TO myapp;
+```
+
+Note: `init-db.sql` only runs on fresh Postgres containers. For existing deployments, run the SQL manually.
+
+### 5. Deploy
+
+```bash
+# Sync to droplet
+rsync -avz --exclude='.git' --exclude='.env' . root@159.65.241.127:/root/platform-infra/
+
+# SSH to droplet
+ssh root@159.65.241.127
+
+# Pull and start new service
+cd /root/platform-infra
+docker compose pull myapp
+docker compose up -d myapp
+
+# Restart Caddy to pick up new domain
+docker compose restart caddy
+```
+
+## Troubleshooting
+
+### Service won't start
+```bash
+docker logs platform-infra-<service>-1
+```
+
+### Wrong architecture (exec format error)
+The droplet is linux/amd64. Rebuild with:
+```bash
+docker build --platform linux/amd64 -t ghcr.io/richmiles/<app>:latest .
+```
+
+### Can't pull from ghcr.io (unauthorized)
+Either make the package public on GitHub, or auth on droplet:
+```bash
+# Get token locally
+gh auth token
+
+# Auth on droplet
+echo '<token>' | docker login ghcr.io -u richmiles --password-stdin
+```
+
+### Caddy not serving new domain
+1. Check DNS is pointing to droplet: `dig +short <domain>`
+2. Restart Caddy: `docker compose restart caddy`
+3. Check Caddy logs: `docker logs platform-infra-caddy-1`
+
+### Database connection issues
+```bash
+# Check postgres is healthy
+docker compose ps postgres
+
+# Connect manually
+docker compose exec postgres psql -U postgres
+```
+
+## File Structure
+
+```
+platform-infra/
+├── docker-compose.yml       # Service definitions
+├── Caddyfile                # Domain routing
+├── .env.example             # Environment template
+├── .env                     # Actual secrets (git-ignored)
+├── init-db.sql              # Postgres init script
+├── setup.sh                 # Fresh server bootstrap
+├── README.md                # Overview and commands
+├── AGENTS.md                # This file
+├── WHEN_SOMETHING_BREAKS.md # Incident response runbook
+└── docs/
+    └── SPARKSWARM_BRAND.md  # SparkSwarm infrastructure overview
+```
+
+## Key Documentation
+
+- **[WHEN_SOMETHING_BREAKS.md](WHEN_SOMETHING_BREAKS.md)** - Triage checklist and common fixes for production issues
+- **[docs/SPARKSWARM_BRAND.md](docs/SPARKSWARM_BRAND.md)** - What SparkSwarm is and what services it provides
