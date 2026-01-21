@@ -82,6 +82,29 @@ services:
       postgres:
         condition: service_healthy
 
+  # Matrix/Synapse - SparkSwarm ops chat
+  synapse:
+    image: matrixdotorg/synapse:latest
+    restart: unless-stopped
+    environment:
+      SYNAPSE_SERVER_NAME: chat.sparkswarm.com
+      SYNAPSE_REPORT_STATS: "no"
+      SYNAPSE_NO_TLS: "yes"
+      SYNAPSE_ENABLE_REGISTRATION: "no"
+      SYNAPSE_LOG_LEVEL: WARNING
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${SYNAPSE_DB_NAME:-synapse_db}
+      POSTGRES_USER: ${SYNAPSE_DB_USER:-synapse}
+      POSTGRES_PASSWORD: ${SYNAPSE_DB_PASSWORD:?Set SYNAPSE_DB_PASSWORD in .env}
+    volumes:
+      - synapse_data:/data
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 networks:
   internal:
     driver: bridge
@@ -90,3 +113,4 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  synapse_data:
