@@ -12,6 +12,11 @@ analytics.sparkswarm.com {
 	reverse_proxy umami:3000
 }
 
+# Matrix/Synapse - SparkSwarm ops chat
+chat.sparkswarm.com {
+	reverse_proxy synapse:8008
+}
+
 # Add new services below:
 # example.sparkswarm.com {
 #     reverse_proxy service:port
