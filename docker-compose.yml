@@ -63,6 +63,10 @@ services:
       OBJECT_STORAGE_ACCESS_KEY: ${SPACES_ACCESS_KEY:-}
       OBJECT_STORAGE_SECRET_KEY: ${SPACES_SECRET_KEY:-}
       OBJECT_STORAGE_REGION: nyc3
+      # Matrix Notifications (SparkSwarm ops alerts)
+      MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
+      MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
+      MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
     networks:
       - internal
     depends_on:
