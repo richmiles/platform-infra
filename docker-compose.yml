@@ -17,6 +17,7 @@ services:
       - ieomd
       - umami
       - noodle
+      - human-index
 
   # Shared Postgres database
   postgres:
@@ -122,6 +123,26 @@ services:
       - noodle_data:/app/data
     networks:
       - internal
+
+  # Human Index - private recall utility (FastAPI + static frontend)
+  human-index:
+    image: ghcr.io/richmiles/human-index:${HUMAN_INDEX_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${HUMAN_INDEX_DB_USER:-human_index}:${HUMAN_INDEX_DB_PASSWORD:?Set HUMAN_INDEX_DB_PASSWORD in .env}@postgres:5432/${HUMAN_INDEX_DB_NAME:-human_index_db}
+      CORS_ORIGINS: ${HUMAN_INDEX_CORS_ORIGINS:-["https://humanindex.io"]}
+      ENVIRONMENT: ${HUMAN_INDEX_ENVIRONMENT:-production}
+      PUBLIC_BASE_URL: ${HUMAN_INDEX_PUBLIC_BASE_URL:-https://humanindex.io}
+      POSTMARK_API_TOKEN: ${HUMAN_INDEX_POSTMARK_API_TOKEN:?Set HUMAN_INDEX_POSTMARK_API_TOKEN in .env}
+      MAIL_FROM: ${HUMAN_INDEX_MAIL_FROM:-Human Index <records@humanindex.io>}
+      MAIL_REPLY_TO: ${HUMAN_INDEX_MAIL_REPLY_TO:-}
+      SESSION_TTL_DAYS: ${HUMAN_INDEX_SESSION_TTL_DAYS:-30}
+      SESSION_COOKIE_NAME: ${HUMAN_INDEX_SESSION_COOKIE_NAME:-humanindex_session}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 networks:
   internal:

@@ -20,3 +20,8 @@ CREATE DATABASE synapse_db
   LC_CTYPE='C'
   TEMPLATE template0;
 GRANT ALL PRIVILEGES ON DATABASE synapse_db TO synapse;
+
+-- Create Human Index database and user
+CREATE USER human_index WITH PASSWORD 'CHANGE_ME_HUMAN_INDEX';
+CREATE DATABASE human_index_db OWNER human_index;
+GRANT ALL PRIVILEGES ON DATABASE human_index_db TO human_index;

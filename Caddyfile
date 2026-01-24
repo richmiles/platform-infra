@@ -22,6 +22,15 @@ callofthenoodle.com {
 	reverse_proxy noodle:8000
 }
 
+# Human Index
+humanindex.io {
+	reverse_proxy human-index:8000
+}
+
+www.humanindex.io {
+	redir https://humanindex.io{uri} permanent
+}
+
 # Add new services below:
 # example.sparkswarm.com {
 #     reverse_proxy service:port

@@ -29,6 +29,7 @@ Shared infrastructure for SparkSwarm projects. Manages Docker Compose services, 
 | IEOMD | ieomd.com | Time-locked secret delivery ([repo](https://github.com/richmiles/in-the-event-of-my-death)) |
 | Noodle | callofthenoodle.com | Bar rating app (SQLite) |
 | Umami | analytics.sparkswarm.com | Privacy-focused analytics |
+| Human Index | humanindex.io | Private recall utility (subjects + observations) |
 
 ## Shared Resources
 
