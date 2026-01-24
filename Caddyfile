@@ -17,6 +17,11 @@ chat.sparkswarm.com {
 	reverse_proxy synapse:8008
 }
 
+# Call of the Noodle - Noodle bar rating app
+callofthenoodle.com {
+	reverse_proxy noodle:8000
+}
+
 # Add new services below:
 # example.sparkswarm.com {
 #     reverse_proxy service:port
