@@ -18,6 +18,7 @@ services:
       - umami
       - noodle
       - human-index
+      - spark-swarm
 
   # Shared Postgres database
   postgres:
@@ -138,6 +139,22 @@ services:
       MAIL_REPLY_TO: ${HUMAN_INDEX_MAIL_REPLY_TO:-}
       SESSION_TTL_DAYS: ${HUMAN_INDEX_SESSION_TTL_DAYS:-30}
       SESSION_COOKIE_NAME: ${HUMAN_INDEX_SESSION_COOKIE_NAME:-humanindex_session}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Spark Swarm - Project ecosystem dashboard
+  spark-swarm:
+    image: ghcr.io/richmiles/spark-swarm:${SPARK_SWARM_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${SPARK_SWARM_DB_USER:-spark_swarm}:${SPARK_SWARM_DB_PASSWORD:?Set SPARK_SWARM_DB_PASSWORD in .env}@postgres:5432/${SPARK_SWARM_DB_NAME:-spark_swarm_db}
+      AUTO_CREATE_TABLES: "true"
+      SPARK_SWARM_MASTER_KEY: ${SPARK_SWARM_MASTER_KEY:?Set SPARK_SWARM_MASTER_KEY in .env}
+      SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY:?Set SPARK_SWARM_API_KEY in .env}
+      SPARK_SWARM_AUTH_DISABLED: ${SPARK_SWARM_AUTH_DISABLED:-false}
     networks:
       - internal
     depends_on:
