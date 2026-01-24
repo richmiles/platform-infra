@@ -130,7 +130,7 @@ services:
     image: ghcr.io/richmiles/human-index:${HUMAN_INDEX_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${HUMAN_INDEX_DB_USER:-human_index}:${HUMAN_INDEX_DB_PASSWORD:?Set HUMAN_INDEX_DB_PASSWORD in .env}@postgres:5432/${HUMAN_INDEX_DB_NAME:-human_index_db}
+      DATABASE_URL: postgresql+psycopg://${HUMAN_INDEX_DB_USER:-human_index}:${HUMAN_INDEX_DB_PASSWORD:?Set HUMAN_INDEX_DB_PASSWORD in .env}@postgres:5432/${HUMAN_INDEX_DB_NAME:-human_index_db}
       CORS_ORIGINS: ${HUMAN_INDEX_CORS_ORIGINS:-["https://humanindex.io"]}
       ENVIRONMENT: ${HUMAN_INDEX_ENVIRONMENT:-production}
       PUBLIC_BASE_URL: ${HUMAN_INDEX_PUBLIC_BASE_URL:-https://humanindex.io}
