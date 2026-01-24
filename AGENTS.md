@@ -30,8 +30,33 @@ This repo manages shared infrastructure for all SparkSwarm projects on a single 
 | backend | - | 8000 | IEOMD FastAPI backend |
 | umami | analytics.sparkswarm.com | 3000 | Privacy-focused analytics |
 | noodle | callofthenoodle.com | 8000 | Bar rating app |
+| spark-swarm | swarm.sparkswarm.com | 8000 | Project dashboard + secrets manager |
 | synapse | chat.sparkswarm.com | 8008 | Matrix server (ops alerting) - planned |
 | btcpayserver | pay.sparkswarm.com | 49392 | Bitcoin payments - in progress |
+
+## Secrets Management
+
+**Use Spark Swarm for secrets** instead of manually editing `.env` files.
+
+```bash
+# Store a secret
+curl -X POST https://swarm.sparkswarm.com/api/v1/secrets \
+  -H "X-API-Key: $SPARK_SWARM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "MYAPP_DB_PASSWORD", "value": "secret", "project": "myapp", "environment": "production"}'
+
+# Get a secret
+curl "https://swarm.sparkswarm.com/api/v1/secrets/resolve/MYAPP_DB_PASSWORD?project=myapp&environment=production" \
+  -H "X-API-Key: $SPARK_SWARM_API_KEY"
+
+# Export all secrets for a project as .env
+curl "https://swarm.sparkswarm.com/api/v1/secrets/export/dotenv?project=myapp&environment=production" \
+  -H "X-API-Key: $SPARK_SWARM_API_KEY"
+```
+
+Pre-stored secrets:
+- `CLOUDFLARE_API_TOKEN` - For managing sparkswarm.com DNS
+- `SPARK_SWARM_API_KEY` - For accessing the secrets manager itself
 
 ## Adding a New Service
 
