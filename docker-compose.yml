@@ -67,6 +67,8 @@ services:
       MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
       MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
       MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
+      # Environment identifier for alerts
+      ENVIRONMENT: production
       # BTCPay Server (payment processing)
       BTCPAY_WEBHOOK_SECRET: ${BTCPAY_WEBHOOK_SECRET:-}
     networks:
