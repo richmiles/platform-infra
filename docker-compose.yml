@@ -16,6 +16,7 @@ services:
     depends_on:
       - ieomd
       - umami
+      - noodle
 
   # Shared Postgres database
   postgres:
@@ -113,6 +114,15 @@ services:
       postgres:
         condition: service_healthy
 
+  # Noodle - Bar rating app
+  noodle:
+    image: ghcr.io/richmiles/noodle:${NOODLE_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    volumes:
+      - noodle_data:/app/data
+    networks:
+      - internal
+
 networks:
   internal:
     driver: bridge
@@ -122,3 +132,4 @@ volumes:
   caddy_data:
   caddy_config:
   synapse_data:
+  noodle_data:
