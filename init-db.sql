@@ -25,3 +25,8 @@ GRANT ALL PRIVILEGES ON DATABASE synapse_db TO synapse;
 CREATE USER human_index WITH PASSWORD 'CHANGE_ME_HUMAN_INDEX';
 CREATE DATABASE human_index_db OWNER human_index;
 GRANT ALL PRIVILEGES ON DATABASE human_index_db TO human_index;
+
+-- Create Spark Swarm database and user
+CREATE USER spark_swarm WITH PASSWORD 'CHANGE_ME_SPARK_SWARM';
+CREATE DATABASE spark_swarm_db OWNER spark_swarm;
+GRANT ALL PRIVILEGES ON DATABASE spark_swarm_db TO spark_swarm;

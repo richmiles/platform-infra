@@ -143,6 +143,34 @@ docker compose up -d myapp
 docker compose restart caddy
 ```
 
+## Secrets (SparkSwarm) - Current Injection Model
+
+SparkSwarm Secrets API is the source of truth for production secrets, but services still load env vars from `/root/platform-infra/.env` on the droplet (Docker Compose).
+
+Workflow:
+1) Store/update secrets in SparkSwarm:
+```bash
+curl -X POST https://swarm.sparkswarm.com/api/v1/secrets \
+  -H "X-API-Key: $SPARK_SWARM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"HUMAN_INDEX_DB_PASSWORD","value":"generated-password","project":"human-index","environment":"production"}'
+```
+
+2) Export to dotenv (review first):
+```bash
+curl -s "https://swarm.sparkswarm.com/api/v1/secrets/export/dotenv?project=human-index&environment=production" \
+  -H "X-API-Key: $SPARK_SWARM_API_KEY"
+```
+
+3) Apply on droplet and restart the service:
+```bash
+# Prefer using workspace helper (idempotent block replace):
+./bin/platform prod secrets apply human-index production --yes
+./bin/platform prod deploy human-index --yes
+```
+
+Note: the droplet needs `SPARK_SWARM_API_KEY` available to fetch exports (currently stored in `/root/platform-infra/.env`).
+
 ## Troubleshooting
 
 ### Service won't start

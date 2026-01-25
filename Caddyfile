@@ -31,6 +31,11 @@ www.humanindex.io {
 	redir https://humanindex.io{uri} permanent
 }
 
+# Spark Swarm - Project ecosystem dashboard
+swarm.sparkswarm.com {
+	reverse_proxy spark-swarm:8000
+}
+
 # Add new services below:
 # example.sparkswarm.com {
 #     reverse_proxy service:port
