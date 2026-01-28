@@ -118,7 +118,7 @@ services:
 
   # Noodle - Bar rating app
   noodle:
-    image: ghcr.io/richmiles/noodle:${NOODLE_IMAGE_TAG:-latest}
+    image: ghcr.io/richmiles/noodle-app:${NOODLE_IMAGE_TAG:-latest}
     restart: unless-stopped
     volumes:
       - noodle_data:/app/data
