@@ -1,6 +1,6 @@
 # IEOMD - Time-locked secret delivery
 ieomd.com {
-	reverse_proxy ieomd:80
+	reverse_proxy ieomd:8000
 }
 
 www.ieomd.com {
