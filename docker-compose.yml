@@ -39,23 +39,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # IEOMD Web - Caddy + static frontend (proxies /api to backend)
+  # IEOMD - App (FastAPI + built SPA)
   ieomd:
-    image: ghcr.io/richmiles/in-the-event-of-my-death-web:${IEOMD_IMAGE_TAG:-latest}
+    image: ghcr.io/richmiles/ieomd-app:${IEOMD_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      SITE_ADDRESS: ":80" # Internal HTTP only (platform Caddy handles TLS)
-    networks:
-      - internal
-    depends_on:
-      - backend
-
-  # IEOMD Backend - FastAPI (named "backend" to match IEOMD web Caddyfile)
-  backend:
-    image: ghcr.io/richmiles/in-the-event-of-my-death-backend:${IEOMD_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: postgresql://${IEOMD_DB_USER:-ieomd}:${IEOMD_DB_PASSWORD:?Set IEOMD_DB_PASSWORD in .env}@postgres:5432/${IEOMD_DB_NAME:-ieomd_db}
+      DATABASE_URL: postgresql+psycopg2://${IEOMD_DB_USER:-ieomd}:${IEOMD_DB_PASSWORD:?Set IEOMD_DB_PASSWORD in .env}@postgres:5432/${IEOMD_DB_NAME:-ieomd_db}
       CORS_ORIGINS: ${IEOMD_CORS_ORIGINS:-["https://ieomd.com"]}
       # Object Storage (shared bucket with project prefix)
       # Prefer IEOMD_OBJECT_STORAGE_ENABLED; OBJECT_STORAGE_ENABLED is supported for backward compatibility.
