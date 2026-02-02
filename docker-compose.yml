@@ -18,6 +18,7 @@ services:
       - umami
       - noodle
       - human-index
+      - richmiles-xyz
       - spark-swarm
 
   # Shared Postgres database
@@ -133,6 +134,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # richmiles.xyz - Static resume site
+  richmiles-xyz:
+    image: ghcr.io/richmiles/richmiles-xyz-app:${RICHMILES_XYZ_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - internal
 
   # Spark Swarm - Project ecosystem dashboard
   spark-swarm:
