@@ -26,8 +26,7 @@ This repo manages shared infrastructure for all SparkSwarm projects on a single 
 |---------|--------|------|-------|
 | caddy | - | 80, 443 | Reverse proxy, auto HTTPS |
 | postgres | - | 5432 | Shared DB (internal only) |
-| ieomd | ieomd.com | 80 | IEOMD frontend + backend proxy |
-| backend | - | 8000 | IEOMD FastAPI backend |
+| ieomd | ieomd.com | 8000 | IEOMD app (FastAPI serves built SPA + API) |
 | umami | analytics.sparkswarm.com | 3000 | Privacy-focused analytics |
 | noodle | callofthenoodle.com | 8000 | Bar rating app |
 | spark-swarm | swarm.sparkswarm.com | 8000 | Project dashboard + secrets manager |
