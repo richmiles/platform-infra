@@ -158,6 +158,31 @@ services:
       postgres:
         condition: service_healthy
 
+  # Fleet uptime prober (logs Spark Swarm events + Matrix alerts)
+  uptime-prober:
+    image: ghcr.io/richmiles/spark-swarm:${SPARK_SWARM_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["python", "-m", "app.uptime_prober"]
+    environment:
+      SPARK_SWARM_API_URL: http://spark-swarm:8000/api/v1
+      SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY:?Set SPARK_SWARM_API_KEY in .env}
+      MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
+      MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
+      MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
+      # Probe tuning
+      UPTIME_INTERVAL_SECONDS: ${UPTIME_INTERVAL_SECONDS:-60}
+      UPTIME_TIMEOUT_SECONDS: ${UPTIME_TIMEOUT_SECONDS:-5}
+      UPTIME_FAILS_FOR_DOWN: ${UPTIME_FAILS_FOR_DOWN:-3}
+      UPTIME_SUCCESSES_FOR_UP: ${UPTIME_SUCCESSES_FOR_UP:-2}
+      UPTIME_STATE_PATH: /data/uptime/state.json
+    volumes:
+      - uptime_state:/data/uptime
+    networks:
+      - internal
+    depends_on:
+      spark-swarm:
+        condition: service_started
+
 networks:
   internal:
     driver: bridge
@@ -168,3 +193,4 @@ volumes:
   caddy_config:
   synapse_data:
   noodle_data:
+  uptime_state:
