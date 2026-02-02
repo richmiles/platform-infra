@@ -31,6 +31,15 @@ www.humanindex.io {
 	redir https://humanindex.io{uri} permanent
 }
 
+# richmiles.xyz
+richmiles.xyz {
+	reverse_proxy richmiles-xyz:8000
+}
+
+www.richmiles.xyz {
+	redir https://richmiles.xyz{uri} permanent
+}
+
 # Spark Swarm - Project ecosystem dashboard
 swarm.sparkswarm.com {
 	reverse_proxy spark-swarm:8000
