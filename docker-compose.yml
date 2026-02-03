@@ -152,6 +152,9 @@ services:
       SPARK_SWARM_MASTER_KEY: ${SPARK_SWARM_MASTER_KEY:?Set SPARK_SWARM_MASTER_KEY in .env}
       SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY:?Set SPARK_SWARM_API_KEY in .env}
       SPARK_SWARM_AUTH_DISABLED: ${SPARK_SWARM_AUTH_DISABLED:-false}
+      UPTIME_STATE_PATH: /data/uptime/state.json
+    volumes:
+      - uptime_state:/data/uptime:ro
     networks:
       - internal
     depends_on:
