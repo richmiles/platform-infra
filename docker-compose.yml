@@ -139,6 +139,9 @@ services:
   richmiles-xyz:
     image: ghcr.io/richmiles/richmiles-xyz-app:${RICHMILES_XYZ_IMAGE_TAG:-latest}
     restart: unless-stopped
+    environment:
+      SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY}
+      SPARK_SWARM_API_URL: http://spark-swarm:8000/api/v1
     networks:
       - internal
 
@@ -172,7 +175,7 @@ services:
     command: ["python", "-m", "app.uptime_prober"]
     environment:
       SPARK_SWARM_API_URL: http://spark-swarm:8000/api/v1
-      SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY:?Set SPARK_SWARM_API_KEY in .env}
+      SPARK_SWARM_API_KEY: ${UPTIME_PROBER_API_KEY:?Set UPTIME_PROBER_API_KEY in .env}
       MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
       MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
       MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
@@ -190,6 +193,30 @@ services:
       spark-swarm:
         condition: service_started
 
+  # Email monitor (IMAP polling + Matrix notifications for new mail)
+  email-monitor:
+    image: ghcr.io/richmiles/spark-swarm:${SPARK_SWARM_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["python", "-m", "app.email_monitor"]
+    environment:
+      SPARK_SWARM_API_URL: http://spark-swarm:8000/api/v1
+      SPARK_SWARM_API_KEY: ${EMAIL_MONITOR_API_KEY:?Set EMAIL_MONITOR_API_KEY in .env}
+      MXROUTE_IMAP_HOST: ${MXROUTE_IMAP_HOST:-}
+      MXROUTE_IMAP_PORT: ${MXROUTE_IMAP_PORT:-993}
+      MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
+      MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
+      MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
+      EMAIL_MONITOR_INTERVAL_SECONDS: ${EMAIL_MONITOR_INTERVAL_SECONDS:-300}
+      EMAIL_MONITOR_STATE_PATH: /data/email-monitor/state.json
+      EMAIL_PASSWORDS: ${EMAIL_PASSWORDS:-}
+    volumes:
+      - email_monitor_state:/data/email-monitor
+    networks:
+      - internal
+    depends_on:
+      spark-swarm:
+        condition: service_started
+
 networks:
   internal:
     driver: bridge
@@ -201,3 +228,4 @@ volumes:
   synapse_data:
   noodle_data:
   uptime_state:
+  email_monitor_state:
