@@ -30,6 +30,7 @@ Shared infrastructure for SparkSwarm projects. Manages Docker Compose services, 
 | Noodle | callofthenoodle.com | Bar rating app (SQLite) |
 | Umami | analytics.sparkswarm.com | Privacy-focused analytics |
 | Human Index | humanindex.io | Private recall utility (subjects + observations) |
+| Bullshit or Fit | bullshitorfit.com | Resume screening landing page + lead capture |
 
 ## Shared Resources
 

@@ -19,6 +19,7 @@ services:
       - noodle
       - human-index
       - richmiles-xyz
+      - bullshit-or-fit
       - spark-swarm
 
   # Shared Postgres database
@@ -142,6 +143,17 @@ services:
     environment:
       SPARK_SWARM_API_KEY: ${SPARK_SWARM_API_KEY}
       SPARK_SWARM_API_URL: http://spark-swarm:8000/api/v1
+    networks:
+      - internal
+
+  # Bullshit or Fit - public landing + lead capture
+  bullshit-or-fit:
+    image: ghcr.io/richmiles/bullshit-or-fit:${BULLSHIT_OR_FIT_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      SPARK_SWARM_API_URL: ${BULLSHIT_OR_FIT_SPARK_SWARM_API_URL:-http://spark-swarm:8000/api/v1}
+      SPARK_SLUG: ${BULLSHIT_OR_FIT_SPARK_SLUG:-bullshit-or-fit}
+      CORS_ORIGINS: ${BULLSHIT_OR_FIT_CORS_ORIGINS:-https://bullshitorfit.com,https://www.bullshitorfit.com}
     networks:
       - internal
 

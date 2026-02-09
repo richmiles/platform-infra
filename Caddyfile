@@ -40,6 +40,15 @@ www.richmiles.xyz {
 	redir https://richmiles.xyz{uri} permanent
 }
 
+# Bullshit or Fit
+bullshitorfit.com {
+	reverse_proxy bullshit-or-fit:8000
+}
+
+www.bullshitorfit.com {
+	redir https://bullshitorfit.com{uri} permanent
+}
+
 # Spark Swarm - Project ecosystem dashboard
 swarm.sparkswarm.com {
 	reverse_proxy spark-swarm:8000
