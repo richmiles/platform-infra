@@ -160,6 +160,13 @@ services:
       MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
       MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
       MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
+      LEADS_SMTP_HOST: ${LEADS_SMTP_HOST:-}
+      LEADS_SMTP_PORT: ${LEADS_SMTP_PORT:-587}
+      LEADS_SMTP_USERNAME: ${LEADS_SMTP_USERNAME:-}
+      LEADS_SMTP_PASSWORD: ${LEADS_SMTP_PASSWORD:-}
+      LEADS_SMTP_USE_TLS: ${LEADS_SMTP_USE_TLS:-true}
+      LEADS_MAIL_FROM: ${LEADS_MAIL_FROM:-}
+      LEADS_MAIL_REPLY_TO: ${LEADS_MAIL_REPLY_TO:-}
     volumes:
       - uptime_state:/data/uptime:ro
     networks:
@@ -214,6 +221,25 @@ services:
     networks:
       - internal
     depends_on:
+      spark-swarm:
+        condition: service_started
+
+  # Lead outreach scheduler (SLA reminders/overdue flags + Matrix notifications)
+  lead-scheduler:
+    image: ghcr.io/richmiles/spark-swarm:${SPARK_SWARM_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["python", "-m", "app.lead_scheduler"]
+    environment:
+      DATABASE_URL: postgresql://${SPARK_SWARM_DB_USER:-spark_swarm}:${SPARK_SWARM_DB_PASSWORD:?Set SPARK_SWARM_DB_PASSWORD in .env}@postgres:5432/${SPARK_SWARM_DB_NAME:-spark_swarm_db}
+      LEADS_WORKER_INTERVAL_SECONDS: ${LEADS_WORKER_INTERVAL_SECONDS:-300}
+      MATRIX_HOMESERVER_URL: ${MATRIX_HOMESERVER_URL:-}
+      MATRIX_ACCESS_TOKEN: ${MATRIX_ACCESS_TOKEN:-}
+      MATRIX_ROOM_ID: ${MATRIX_ROOM_ID:-}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
       spark-swarm:
         condition: service_started
 
