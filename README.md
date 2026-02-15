@@ -162,6 +162,33 @@ docker compose ps
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
+## Host Metrics Collector
+
+The droplet can push host + container metrics to Spark Swarm every 5 minutes.
+
+Files:
+- `scripts/metrics-collector.py`
+- `systemd/metrics-collector.service`
+- `systemd/metrics-collector.timer`
+
+Install on droplet:
+
+```bash
+cd /root/platform-infra
+install -m 644 systemd/metrics-collector.service /etc/systemd/system/metrics-collector.service
+install -m 644 systemd/metrics-collector.timer /etc/systemd/system/metrics-collector.timer
+systemctl daemon-reload
+systemctl enable --now metrics-collector.timer
+```
+
+Verify:
+
+```bash
+systemctl status metrics-collector.timer --no-pager
+systemctl start metrics-collector.service
+journalctl -u metrics-collector.service -n 50 --no-pager
+```
+
 ## Backups
 
 Postgres data is stored in a Docker volume. To backup:
