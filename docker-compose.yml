@@ -185,6 +185,8 @@ services:
       LEADS_SMTP_USE_TLS: ${LEADS_SMTP_USE_TLS:-true}
       LEADS_MAIL_FROM: ${LEADS_MAIL_FROM:-}
       LEADS_MAIL_REPLY_TO: ${LEADS_MAIL_REPLY_TO:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      SERPER_API_KEY: ${SERPER_API_KEY:-}
     volumes:
       - uptime_state:/data/uptime:ro
     networks:

@@ -50,8 +50,16 @@ www.bullshitorfit.com {
 }
 
 # Spark Swarm - Project ecosystem dashboard
-swarm.sparkswarm.com {
+sparkswarm.com {
 	reverse_proxy spark-swarm:8000
+}
+
+www.sparkswarm.com {
+	redir https://sparkswarm.com{uri} permanent
+}
+
+swarm.sparkswarm.com {
+	redir https://sparkswarm.com{uri} permanent
 }
 
 # Add new services below:
