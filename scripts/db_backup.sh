@@ -41,6 +41,7 @@ SPACES_PREFIX="${DB_BACKUP_SPACES_PREFIX:-postgres}"
 SPACES_BUCKET="${SPACES_BUCKET:-}"
 SPACES_REGION="${SPACES_REGION:-nyc3}"
 SPACES_ENDPOINT="${SPACES_ENDPOINT:-https://${SPACES_REGION}.digitaloceanspaces.com}"
+AWS_CLI_IMAGE="${DB_BACKUP_AWS_CLI_IMAGE:-amazon/aws-cli:2}"
 HEALTH_MAX_AGE_HOURS="${DB_BACKUP_HEALTH_MAX_AGE_HOURS:-25}"
 STATE_FILE="${BACKUP_DIR}/backup_state.env"
 DATABASE_NAME="${DB_BACKUP_DATABASE_NAME:-${SPARK_SWARM_DB_NAME:-spark_swarm_db}}"
@@ -64,6 +65,17 @@ require_tool() {
     log "missing required tool: $tool"
     exit 1
   fi
+}
+
+aws_cmd() {
+  docker run --rm \
+    -e AWS_ACCESS_KEY_ID \
+    -e AWS_SECRET_ACCESS_KEY \
+    -e AWS_DEFAULT_REGION \
+    -v "${BACKUP_DIR}:${BACKUP_DIR}" \
+    "$AWS_CLI_IMAGE" \
+    --endpoint-url "$SPACES_ENDPOINT" \
+    "$@"
 }
 
 to_epoch_date() {
@@ -144,7 +156,7 @@ cleanup_remote() {
   local prefix="${SPACES_PREFIX%/}/"
 
   mapfile -t keys < <(
-    aws --endpoint-url "$SPACES_ENDPOINT" s3api list-objects-v2 \
+    aws_cmd s3api list-objects-v2 \
       --bucket "$SPACES_BUCKET" \
       --prefix "$prefix" \
       --query 'Contents[].Key' \
@@ -180,13 +192,12 @@ cleanup_remote() {
       continue
     fi
 
-    aws --endpoint-url "$SPACES_ENDPOINT" s3 rm "s3://${SPACES_BUCKET}/${key}" --only-show-errors
+    aws_cmd s3 rm "s3://${SPACES_BUCKET}/${key}" --only-show-errors
   done
 }
 
 run_backup() {
   require_tool docker
-  require_tool aws
   require_tool gzip
 
   if [[ -z "$SPACES_BUCKET" || -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" ]]; then
@@ -218,13 +229,13 @@ run_backup() {
   mv "$tmp_path" "$local_path"
   log "backup written to ${local_path}"
 
-  if ! aws --endpoint-url "$SPACES_ENDPOINT" s3 cp "$local_path" "s3://${SPACES_BUCKET}/${object_key}" --only-show-errors; then
+  if ! aws_cmd s3 cp "$local_path" "s3://${SPACES_BUCKET}/${object_key}" --only-show-errors; then
     persist_state "$now_iso" "failed" "" "$local_path" "$object_key" "upload_failed"
     send_matrix_alert "Spark Swarm DB backup upload failed for ${filename}."
     exit 1
   fi
 
-  aws --endpoint-url "$SPACES_ENDPOINT" s3api head-object --bucket "$SPACES_BUCKET" --key "$object_key" >/dev/null
+  aws_cmd s3api head-object --bucket "$SPACES_BUCKET" --key "$object_key" >/dev/null
   persist_state "$now_iso" "success" "$now_iso" "$local_path" "$object_key" ""
 
   cleanup_local
