@@ -37,6 +37,7 @@ These live in `/root/platform-infra/.env` and are documented in `.env.example`.
 - `DB_BACKUP_LOCAL_DIR` (default `/root/backups`)
 - `DB_BACKUP_PREFIX` (default `spark_swarm`)
 - `DB_BACKUP_SPACES_PREFIX` (default `postgres`)
+- `DB_BACKUP_AWS_CLI_IMAGE` (default `amazon/aws-cli:2`)
 - `DB_BACKUP_HEALTH_MAX_AGE_HOURS` (default `25`)
 
 Optional Matrix alerting:
@@ -44,6 +45,8 @@ Optional Matrix alerting:
 - `MATRIX_HOMESERVER_URL`
 - `MATRIX_ACCESS_TOKEN`
 - `MATRIX_ROOM_ID`
+
+Note: the backup script runs AWS CLI via Docker (`amazon/aws-cli`), so host-level `awscli` install is not required.
 
 ## Install on Droplet
 
