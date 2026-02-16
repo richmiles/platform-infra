@@ -191,16 +191,25 @@ journalctl -u metrics-collector.service -n 50 --no-pager
 
 ## Backups
 
-Postgres data is stored in a Docker volume. To backup:
+Automated PostgreSQL backup + Spaces upload is documented in `docs/backup.md`.
+
+Install timers on the droplet:
 
 ```bash
-docker compose exec postgres pg_dumpall -U postgres > backup.sql
+cd /root/platform-infra
+install -m 644 systemd/db-backup.service /etc/systemd/system/db-backup.service
+install -m 644 systemd/db-backup.timer /etc/systemd/system/db-backup.timer
+install -m 644 systemd/db-backup-health.service /etc/systemd/system/db-backup-health.service
+install -m 644 systemd/db-backup-health.timer /etc/systemd/system/db-backup-health.timer
+systemctl daemon-reload
+systemctl enable --now db-backup.timer db-backup-health.timer
 ```
 
-To restore:
+Run a manual backup:
 
 ```bash
-cat backup.sql | docker compose exec -T postgres psql -U postgres
+cd /root/platform-infra
+scripts/db_backup.sh run
 ```
 
 ## Directory Structure
@@ -216,7 +225,18 @@ platform-infra/
 ├── AGENTS.md                # Safe deployment practices
 ├── WHEN_SOMETHING_BREAKS.md # Incident response runbook
 ├── README.md                # This file
+├── scripts/
+│   ├── db_backup.sh         # Postgres backup + Spaces upload + retention
+│   └── metrics-collector.py # Host metrics ingest
+├── systemd/
+│   ├── db-backup.service
+│   ├── db-backup.timer
+│   ├── db-backup-health.service
+│   ├── db-backup-health.timer
+│   ├── metrics-collector.service
+│   └── metrics-collector.timer
 └── docs/
+    ├── backup.md            # Backup + restore runbook
     ├── adding-a-service.md  # Service onboarding guide
     └── SPARKSWARM_BRAND.md  # SparkSwarm infrastructure overview
 ```
