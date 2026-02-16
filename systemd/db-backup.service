@@ -1,0 +1,15 @@
+[Unit]
+Description=Spark Swarm PostgreSQL backup + Spaces upload
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/platform-infra
+EnvironmentFile=/root/platform-infra/.env
+ExecStart=/usr/bin/env bash /root/platform-infra/scripts/db_backup.sh run
+
+[Install]
+WantedBy=multi-user.target

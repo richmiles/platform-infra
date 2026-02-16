@@ -1,0 +1,14 @@
+[Unit]
+Description=Spark Swarm PostgreSQL backup health check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/platform-infra
+EnvironmentFile=/root/platform-infra/.env
+ExecStart=/usr/bin/env bash /root/platform-infra/scripts/db_backup.sh health-check
+
+[Install]
+WantedBy=multi-user.target
